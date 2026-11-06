@@ -31,7 +31,6 @@ de cuatro notas más el bajo; la tecla más grave apretada marca la raíz.
 - **arpegiador**: up, down, up-down, up x2, down x2, random y *arpa*; con el
   gate al máximo, legato real
 - **modo acorde** on/off (off = una sola nota) y **retener**
-- crackle de disco viejo con más de dos teclas apretadas
 - sigue el clock MIDI entrante para el tempo del arpegio
 - todo se guarda solo
 
