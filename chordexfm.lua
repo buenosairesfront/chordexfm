@@ -33,6 +33,8 @@
 engine.name = 'ChordexFM'
 
 local musicutil = require 'musicutil'
+-- arc y crow (si no están conectados no cambia nada)
+local ext = include("lib/chordex_ext")
 
 local midi_in
 local current_note = nil
@@ -216,6 +218,7 @@ end
 -- ============================================================
 
 local function sound_chord(note)
+  ext.chord(note, current_vel)
   local f = chord_tone_hz(note)
   -- modo simple con varias teclas: suenan todas juntas (hasta 4, las más agudas)
   if pv("chord_on") == 1 and #arp_keys > 1 then
@@ -288,6 +291,7 @@ end
 local step_i = 1
 local function arp_step()
   if current_note == nil then return end
+  ext.pulse()
   local notes = arp_notes()
   local pat = pv("arp_pattern")
   local idx, pos
@@ -393,6 +397,7 @@ end
 local function release_now()
   release_id = nil
   if #held_stack == 0 and not hold_on and current_note ~= nil then
+    ext.release()
     if arp_on then stop_arp() else engine.noteOff(); release_chord_vs() end
     current_note = nil
   end
@@ -516,7 +521,7 @@ local STATE_FILE
 
 local function add_params()
   params:add_separator("chordex_fm", "CHORDEX FM")
-  params:add_number("midi_channel", "canal MIDI (0=todos)", 0, 16, 0)
+  params:add_number("midi_channel", "canal MIDI (0=todos)", 0, 16, 1)
   params:add_option("midi_clock_div", "divisor reloj MIDI", {"1x", "2x", "4x", "8x"}, 3)
   params:add_option("model", "modelo", FM.model_names, 1)
   params:set_action("model", function(v)
@@ -598,7 +603,9 @@ function init()
   end
 
   add_params()
+  ext.add_params()
   STATE_FILE = norns.state.data .. "estado.pset"
+  local fresh = not util.file_exists(STATE_FILE)
   loading = true
   if util.file_exists(STATE_FILE) then params:read(STATE_FILE) end
   params:bang()
@@ -608,9 +615,18 @@ function init()
   splash_start = util.time()
   screen_metro = metro.init(function() redraw() end, 1 / 24, -1)
   screen_metro:start()
+  -- primera vez (sin estado guardado): tempo interno 50 BPM
+  if fresh then params:set("clock_tempo", 50) end
+  ext.init{
+    rings = {"index", "fb", "arp_rate", "space"},
+    env = function() return pv("atk"), 1.5, 0.7, pv("rel") end,
+    beat = beat_seconds, on = on_note_on, off = on_note_off,
+    level = function() return flash end,
+  }
 end
 
 function cleanup()
+  ext.cleanup()
   if STATE_FILE then params:write(STATE_FILE, "chordexfm") end
 end
 
