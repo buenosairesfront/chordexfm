@@ -68,7 +68,7 @@ local chord_intervals = {
   m7b5 = {0, 3, 6, 10}, sus2 = {0, 2, 7}, sus4 = {0, 5, 7},
 }
 local note_names = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"}
-local arp_pattern_names = {"up", "down", "up-down", "up x2", "down x2", "random", "arpa"}
+local arp_pattern_names = {"up", "down", "up-down", "up x2", "down x2", "random", "harp"}
 local arp_rate_mult = {4, 2, 1, 0.5}
 local arp_rate_names = {"x1/4", "x1/2", "x1", "x2"}
 
@@ -522,9 +522,9 @@ local STATE_FILE
 
 local function add_params()
   params:add_separator("chordex_fm", "CHORDEX FM")
-  params:add_number("midi_channel", "canal MIDI (0=todos)", 0, 16, 1)
-  params:add_option("midi_clock_div", "divisor reloj MIDI", {"1x", "2x", "4x", "8x"}, 3)
-  params:add_option("model", "modelo", FM.model_names, 1)
+  params:add_number("midi_channel", "MIDI channel (0=all)", 0, 16, 1)
+  params:add_option("midi_clock_div", "MIDI clock divider", {"1x", "2x", "4x", "8x"}, 3)
+  params:add_option("model", "model", FM.model_names, 1)
   params:set_action("model", function(v)
     engine.model(v - 1)
     -- elegir un modelo carga su algoritmo / ratio / feedback (como un preset);
@@ -537,36 +537,36 @@ local function add_params()
       params:set("moddec", m.moddec)
     end
   end)
-  params:add_option("chord", "acorde", chord_types, 1)
+  params:add_option("chord", "chord", chord_types, 1)
   params:set_action("chord", function()
     if current_note and not arp_on then sound_chord(current_note) end
   end)
-  params:add_option("chord_on", "modo acorde", {"no", "sí"}, 2)
+  params:add_option("chord_on", "chord mode", {"no", "yes"}, 2)
   params:set_action("chord_on", function()
     if current_note and not arp_on and not loading then sound_chord(current_note) end
   end)
-  params:add_option("arp_pattern", "patrón arp", arp_pattern_names, 1)
-  params:add_option("arp_rate", "velocidad arp", arp_rate_names, 3)
-  params:add_control("arp_gate", "gate arp (1=legato)", controlspec.new(0, 1, "lin", 0, 0.6, ""))
+  params:add_option("arp_pattern", "arp pattern", arp_pattern_names, 1)
+  params:add_option("arp_rate", "arp rate", arp_rate_names, 3)
+  params:add_control("arp_gate", "arp gate (1=legato)", controlspec.new(0, 1, "lin", 0, 0.6, ""))
 
   params:add_separator("chordex_fm_fm", "FM")
-  params:add_control("index", "índice", controlspec.new(0, 3, "lin", 0, 1.0, ""))
+  params:add_control("index", "index", controlspec.new(0, 3, "lin", 0, 1.0, ""))
   params:set_action("index", function(v) engine.index(v) end)
-  params:add_option("alg", "algoritmo", {"1", "2", "3", "4", "5", "6", "7", "8"}, 5)
+  params:add_option("alg", "algorithm", {"1", "2", "3", "4", "5", "6", "7", "8"}, 5)
   params:set_action("alg", function(v) engine.alg(v) end)
   params:add_option("ratio", "ratio op 2", FM.ratio_names, 2)
   params:set_action("ratio", function(v) engine.ratio(FM.ratios[v]) end)
   params:add_control("fb", "feedback op 4", controlspec.new(0, 1.5, "lin", 0, 0, ""))
   params:set_action("fb", function(v) engine.fb(v) end)
-  params:add_control("moddec", "barrido", controlspec.new(0.1, 3, "lin", 0, 1, ""))
+  params:add_control("moddec", "sweep", controlspec.new(0.1, 3, "lin", 0, 1, ""))
   params:set_action("moddec", function(v) engine.moddec(v) end)
 
-  params:add_separator("chordex_fm_tono", "TONO")
-  params:add_control("atk", "ataque", controlspec.new(0.001, 2, "lin", 0, 0.01, "s"))
+  params:add_separator("chordex_fm_tono", "TONE")
+  params:add_control("atk", "attack", controlspec.new(0.001, 2, "lin", 0, 0.01, "s"))
   params:set_action("atk", function(v) engine.atk(v) end)
   params:add_control("rel", "decay", controlspec.new(0.02, 4, "lin", 0, 0.9, "s"))
   params:set_action("rel", function(v) engine.rel(v) end)
-  params:add_control("drive", "distorsión", controlspec.new(0, 1, "lin", 0, 0.1, ""))
+  params:add_control("drive", "distortion", controlspec.new(0, 1, "lin", 0, 0.1, ""))
   params:set_action("drive", function(v) engine.drive(v) end)
   params:add_control("wobble", "wobble", controlspec.new(0, 1, "lin", 0, 0.2, ""))
   params:set_action("wobble", function(v) engine.wobble(v) end)
@@ -576,7 +576,7 @@ local function add_params()
   params:set_action("shimmer", function(v) engine.shimmer(v ^ 3) end)
   params:add_control("space", "hall", controlspec.new(0, 0.6, "lin", 0, 0.22, ""))
   params:set_action("space", function(v) engine.space(v) end)
-  params:add_control("gain", "volumen", controlspec.new(0, 1.5, "lin", 0, 1.0, ""))
+  params:add_control("gain", "volume", controlspec.new(0, 1.5, "lin", 0, 1.0, ""))
   params:set_action("gain", function(v) engine.gain(v) end)
 end
 
